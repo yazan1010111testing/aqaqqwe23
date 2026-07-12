@@ -690,8 +690,8 @@ task.spawn(function()
     end
 end)
 
--- Knife Reach Extender
-local originalKnifeSize = nil
+-- Knife Reach Extender (FIXED - No more ragdoll/out-of-map)
+local originalKnifeData = {}
 task.spawn(function()
     while task.wait(0.3) do
         if AdvancedCombatConfig.KnifeReachEnabled and PlayerRole == "Murderer" then
@@ -699,24 +699,40 @@ task.spawn(function()
             if knife then
                 local handle = knife:FindFirstChild("Handle")
                 if handle then
-                    if not originalKnifeSize then
-                        originalKnifeSize = handle.Size
+                    -- Save original data
+                    if not originalKnifeData[handle] then
+                        originalKnifeData[handle] = {
+                            Size = handle.Size,
+                            Transparency = handle.Transparency,
+                            CanCollide = handle.CanCollide,
+                            Massless = handle.Massless
+                        }
                     end
-                    handle.Size = Vector3.new(AdvancedCombatConfig.KnifeReach, AdvancedCombatConfig.KnifeReach, AdvancedCombatConfig.KnifeReach)
-                    handle.Transparency = 1
+                    
+                    -- SAFE METHOD: Only extend length, not width/height
+                    -- This prevents physics glitches
+                    local reach = AdvancedCombatConfig.KnifeReach
+                    handle.Size = Vector3.new(
+                        originalKnifeData[handle].Size.X,  -- Keep original width
+                        originalKnifeData[handle].Size.Y,  -- Keep original height
+                        reach                               -- Only extend length
+                    )
+                    handle.Transparency = 0.8  -- Semi-transparent (not fully invisible)
+                    handle.CanCollide = false  -- No collision with world
+                    handle.Massless = true     -- No weight
                 end
             end
         else
-            if originalKnifeSize then
-                local knife = player.Character and player.Character:FindFirstChild("Knife")
-                if knife then
-                    local handle = knife:FindFirstChild("Handle")
-                    if handle then
-                        handle.Size = originalKnifeSize
-                        handle.Transparency = 0
-                    end
+            -- Restore original knife properties
+            for handle, data in pairs(originalKnifeData) do
+                if handle and handle.Parent then
+                    handle.Size = data.Size
+                    handle.Transparency = data.Transparency
+                    handle.CanCollide = data.CanCollide
+                    handle.Massless = false
                 end
             end
+            originalKnifeData = {}
         end
     end
 end)
