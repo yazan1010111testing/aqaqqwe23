@@ -498,7 +498,7 @@ task.wait(0.5)
 
 -- Load the main script
 local scriptSuccess, scriptError = pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/mm2_premium.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/yazan1010111testing/aqaqqwe23/refs/heads/main/mm2_premium.lua"))()
 end)
 
 if scriptSuccess then
